@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Previous styles remain the same */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .game-area {
+            margin: 20px 0;
+        }
+
+        .text-display {
+            font-size: 18px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            color: #666;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .text-input {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            min-width: 120px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* New styles for the modal popup */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            animation: modalPopup 0.3s ease-out;
+        }
+
+        @keyframes modalPopup {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal h2 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .result-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .close-btn {
+            background-color: #28a745;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Typing Speed Test</h1>
+        <div class="timer">Time: <span id="time">60</span>s</div>
+        <div class="game-area">
+            <div class="text-display" id="text-display"></div>
+            <textarea 
+                class="text-input" 
+                id="text-input" 
+                placeholder="Start typing here... The test will begin when you start typing."
+                disabled
+            ></textarea>
+        </div>
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">WPM</div>
+                <div class="stat-value" id="wpm">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Accuracy</div>
+                <div class="stat-value" id="accuracy">0%</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Characters</div>
+                <div class="stat-value" id="characters">0</div>
+            </div>
+        </div>
+        <button class="btn" id="start-btn">Start Test</button>
+    </div>
+
+    <!-- New Modal Popup -->
+    <div class="modal" id="results-modal">
+        <div class="modal-content">
+            <h2>Test Results</h2>
+            <div class="result-grid">
+                <div class="result-item">
+                    <div class="result-label">Words Per Minute</div>
+                    <div class="result-value" id="final-wpm">0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Accuracy</div>
+                    <div class="result-value" id="final-accuracy">0%</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Total Characters</div>
+                    <div class="result-value" id="final-characters">0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Time Taken</div>
+                    <div class="result-value">60s</div>
+                </div>
+            </div>
+            <button class="btn close-btn" id="close-modal">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        const texts = [
+            "The quick brown fox jumps over the lazy dog.",
+            "To be or not to be, that is the question.",
+            "All that glitters is not gold.",
+            "A journey of a thousand miles begins with a single step.",
+            "Practice makes perfect, but nobody's perfect, so why practice?"
+        ];
+
+        let timeLeft = 60;
+        let timer = null;
+        let isTestActive = false;
+        let startTime = null;
+        let totalCharacters = 0;
+        let correctCharacters = 0;
+
+        const textDisplay = document.getElementById('text-display');
+        const textInput = document.getElementById('text-input');
+        const timeDisplay = document.getElementById('time');
+        const wpmDisplay = document.getElementById('wpm');
+        const accuracyDisplay = document.getElementById('accuracy');
+        const charactersDisplay = document.getElementById('characters');
+        const startButton = document.getElementById('start-btn');
+        const modal = document.getElementById('results-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+
+        function getRandomText() {
+            return texts[Math.floor(Math.random() * texts.length)];
+        }
+
+        function updateStats() {
+            if (!startTime || !isTestActive) return;
+
+            const currentTime = new Date().getTime();
+            const timeElapsed = (currentTime - startTime) / 1000 / 60; // in minutes
+            const wordsTyped = textInput.value.trim().split(/\s+/).length;
+            const wpm = Math.round((wordsTyped / timeElapsed) || 0);
+            const accuracy = Math.round((correctCharacters / totalCharacters) * 100) || 0;
+
+            wpmDisplay.textContent = wpm;
+            accuracyDisplay.textContent = accuracy + '%';
+            charactersDisplay.textContent = totalCharacters;
+
+            return { wpm, accuracy, totalCharacters };
+        }
+
+        function showResults(stats) {
+            document.getElementById('final-wpm').textContent = stats.wpm;
+            document.getElementById('final-accuracy').textContent = stats.accuracy + '%';
+            document.getElementById('final-characters').textContent = stats.totalCharacters;
+            modal.style.display = 'flex';
+        }
+
+        function startTest() {
+            textDisplay.textContent = getRandomText();
+            textInput.value = '';
+            textInput.disabled = false;
+            timeLeft = 60;
+            isTestActive = true;
+            startTime = new Date().getTime();
+            totalCharacters = 0;
+            correctCharacters = 0;
+            textInput.focus();
+            modal.style.display = 'none';
+
+            timer = setInterval(() => {
+                timeLeft--;
+                timeDisplay.textContent = timeLeft;
+                const stats = updateStats();
+
+                if (timeLeft <= 0) {
+                    endTest(stats);
+                }
+            }, 1000);
+
+            startButton.textContent = 'Reset Test';
+        }
+
+        function endTest(stats) {
+            clearInterval(timer);
+            isTestActive = false;
+            textInput.disabled = true;
+            showResults(stats || updateStats());
+            startButton.textContent = 'Start Test';
+        }
+
+        function resetTest() {
+            clearInterval(timer);
+            timeDisplay.textContent = '60';
+            wpmDisplay.textContent = '0';
+            accuracyDisplay.textContent = '0%';
+            charactersDisplay.textContent = '0';
+            textInput.value = '';
+            textDisplay.textContent = '';
+            startButton.textContent = 'Start Test';
+            textInput.disabled = true;
+            isTestActive = false;
+            modal.style.display = 'none';
+        }
+
+        textInput.addEventListener('input', (e) => {
+            if (!isTestActive) return;
+
+            const targetText = textDisplay.textContent;
+            const userInput = e.target.value;
+            totalCharacters = userInput.length;
+            correctCharacters = 0;
+
+            for (let i = 0; i < userInput.length; i++) {
+                if (userInput[i] === targetText[i]) {
+                    correctCharacters++;
+                }
+            }
+
+            if (userInput === targetText) {
+                textDisplay.textContent = getRandomText();
+                textInput.value = '';
+            }
+
+            updateStats();
+        });
+
+        startButton.addEventListener('click', () => {
+            if (isTestActive) {
+                resetTest();
+            } else {
+                startTest();
+            }
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            resetTest();
+        });
+    </script>
+</body>
+</html>
